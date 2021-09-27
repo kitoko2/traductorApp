@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "129454958648",
+    "project_id": "voice-translate-f8935",
+    "storage_bucket": "voice-translate-f8935.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:129454958648:android:94d187cf34494ca4675ecd",
+        "android_client_info": {
+          "package_name": "com.example.voicetranslate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "129454958648-2t9g6h2cpj85vcj2r52pec87nd6s2doh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuOXLweW0KqWDMn_Spgvb5VsH56VEJTa0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "129454958648-2t9g6h2cpj85vcj2r52pec87nd6s2doh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "129454958648-cb3evrpheq6njlq7ka13kn0rappf9e8n.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.voicetranslate"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
