@@ -13,7 +13,6 @@ import 'package:voicetranslate/langue.dart';
 import "package:modal_bottom_sheet/modal_bottom_sheet.dart";
 import "package:clipboard/clipboard.dart";
 
-import 'ml.dart';
 // import "package:google_ml_kit/google_ml_kit.dart";
 // import "package:image_picker/image_picker.dart";
 
@@ -335,11 +334,7 @@ class _MyHomeState extends State<MyHome> {
           children: [
             Spacer(),
             IconButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (contxet) {
-                  return Ml();
-                }));
-              },
+              onPressed: () {},
               icon: const Icon(
                 Icons.camera_alt_outlined,
                 color: Colors.grey,
