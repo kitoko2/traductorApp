@@ -1,11 +1,12 @@
 // ignore_for_file: avoid_print, avoid_unnecessary_containers, sized_box_for_whitespace, prefer_const_constructors
 
 import 'dart:io';
-
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:voicetranslate/constante/couleur.dart';
 import "package:avatar_glow/avatar_glow.dart";
@@ -40,11 +41,20 @@ class _CorpsState extends State<Corps> {
 
   bool toucher = false;
   bool load = false;
+  bool isCamera = true;
 
   Langue langueDepart =
       Langue(nom: "francais", abreger: 'fr', image: "assets/france.png");
   Langue langueArriver =
       Langue(nom: "Anglais", abreger: 'en', image: "assets/angleterre.png");
+
+  InputImage? inputImage;
+  TextDetector textDetector = GoogleMlKit.vision.textDetector();
+
+  bool isLoading = false;
+  bool showFAB = true;
+  bool copied = false;
+  ScrollController scrollController = ScrollController();
 
   traductor(
       {@required String? phrase,
@@ -59,6 +69,7 @@ class _CorpsState extends State<Corps> {
       setState(() {
         resultatTraduction = a.text;
         load = false;
+        copied = false;
       });
 
       speak(arriver, resultatTraduction!);
@@ -79,44 +90,44 @@ class _CorpsState extends State<Corps> {
         );
   }
 
-  InputImage? inputImage;
-  TextDetector textDetector = GoogleMlKit.vision.textDetector();
-
-  bool isLoading = false;
-  bool showFAB = true;
-  ScrollController scrollController = ScrollController();
-
   getTextOnImage() async {
     var resultat = "";
     ImagePicker picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
+    ImageSource source = isCamera ? ImageSource.camera : ImageSource.gallery;
+    final image = await picker.pickImage(source: source);
     if (image != null) {
-      inputImage = InputImage.fromFile(File(image.path));
-      setState(() {
-        isLoading = true;
-      });
-
-      RecognisedText recognisedText =
-          await textDetector.processImage(inputImage!);
-      for (var block in recognisedText.blocks) {
-        print(block.text);
+      File? cropImage = await ImageCropper.cropImage(
+        sourcePath: image.path,
+        // aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+        // aspectRatioPresets: [CropAspectRatioPreset.ratio3x2]);
+      );
+      if (cropImage != null) {
+        inputImage = InputImage.fromFile(File(cropImage.path));
         setState(() {
-          resultat += block.text + " ";
+          isLoading = true;
         });
-      }
-      setState(() {
-        isLoading = false;
-      });
-      if (resultat != "") {
+        RecognisedText recognisedText =
+            await textDetector.processImage(inputImage!);
+        for (var block in recognisedText.blocks) {
+          print(block.text);
+          setState(() {
+            resultat += block.text + " ";
+          });
+        }
         setState(() {
-          motEntrer = resultat;
-          toucher = true;
-          traductor(
-            phrase: motEntrer,
-            depart: langueDepart.abreger,
-            arriver: langueArriver.abreger,
-          );
+          isLoading = false;
         });
+        if (resultat != "") {
+          setState(() {
+            motEntrer = resultat;
+            toucher = true;
+            traductor(
+              phrase: motEntrer,
+              depart: langueDepart.abreger,
+              arriver: langueArriver.abreger,
+            );
+          });
+        }
       }
     }
   }
@@ -183,7 +194,6 @@ class _CorpsState extends State<Corps> {
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                decoration: BoxDecoration(color: mycolor1),
                 child: Column(
                   children: [
                     Column(
@@ -325,19 +335,24 @@ class _CorpsState extends State<Corps> {
                                   ),
                                 ),
                               Spacer(),
-                              if (resultatTraduction != "" && !ecoute)
+                              if (resultatTraduction != "" &&
+                                  !ecoute &&
+                                  !copied)
                                 IconButton(
                                   onPressed: () {
                                     FlutterClipboard.copy(resultatTraduction!)
-                                        .then(
-                                      (value) => ScaffoldMessenger.of(context)
+                                        .then((value) {
+                                      ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
                                           duration: Duration(seconds: 1),
                                           content: Text("Text copié"),
                                         ),
-                                      ),
-                                    );
+                                      );
+                                      setState(() {
+                                        copied = true;
+                                      });
+                                    });
                                   },
                                   icon: Icon(
                                     Icons.copy,
@@ -387,13 +402,21 @@ class _CorpsState extends State<Corps> {
               child: Row(
                 children: [
                   Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      getTextOnImage();
+                  InkWell(
+                    onLongPress: () {
+                      setState(() {
+                        isCamera = !isCamera;
+                      });
                     },
-                    icon: const Icon(
-                      Icons.camera_alt_outlined,
-                      color: Colors.grey,
+                    child: IconButton(
+                      splashRadius: 30,
+                      onPressed: () {
+                        getTextOnImage();
+                      },
+                      icon: Icon(
+                        isCamera ? Icons.camera_alt_outlined : Icons.photo,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                   const Spacer(),
@@ -421,6 +444,7 @@ class _CorpsState extends State<Corps> {
               repeat: true,
               endRadius: 60,
               child: FloatingActionButton(
+                heroTag: "FAB",
                 backgroundColor: Colors.purple,
                 onPressed: () {
                   func();
@@ -437,6 +461,10 @@ class _CorpsState extends State<Corps> {
   // MES FONCTIONS
 
   func() async {
+    setState(() {
+      motEntrer = "";
+      resultatTraduction = "";
+    }); // pour gerer la repetition de l'ancien resultatTraduction quand il ya une erreur
     if (!ecoute) {
       try {
         textSpech.stop();
@@ -517,7 +545,7 @@ class _CorpsState extends State<Corps> {
             toucher = true;
           });
           speech.listen(
-            onResult: (resultat) {
+            onResult: (resultat) async {
               setState(() {
                 motEntrer = resultat.recognizedWords;
               });
@@ -657,7 +685,16 @@ class _CorpsState extends State<Corps> {
         context: context,
         containerWidget: (context, animation, c) {
           return Container(
-            child: c,
+            // child: c,
+            child: ClipRRect(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                child: c,
+              ),
+            ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(20),
@@ -691,7 +728,7 @@ class _CorpsState extends State<Corps> {
                     child: GlowingOverscrollIndicator(
                       axisDirection: AxisDirection.down,
                       color: mycolor4.withOpacity(0.9),
-                      child: SizedBox(
+                      child: Container(
                         height: 150,
                         child: CupertinoPicker(
                           itemExtent: 54,

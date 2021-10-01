@@ -27,6 +27,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  image_cropper: ^1.4.1
   speech_to_text: ^5.1.1
   flutter_tts: ^3.2.2
   translator: ^0.1.7
@@ -40,6 +41,8 @@ dependencies:
   splash_screen_view: ^3.0.0
   carousel_slider: ^4.0.0
   image_picker: ^0.8.4+2
+  share: ^2.0.4
+  url_launcher: ^6.0.12
   flutter:
     sdk: flutter
 
