@@ -1,6 +1,10 @@
-// ignore_for_file: prefer_const_constructors, avoid_print, avoid_unnecessary_containers, sized_box_for_whitespace
+// ignore_for_file: prefer_const_constructors, avoid_print, avoid_unnecessary_containers, sized_box_for_whitespace, prefer_const_literals_to_create_immutables
+import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:lottie/lottie.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:share/share.dart';
+import 'package:voicetranslate/constante/contacter.dart';
 
 class PoyDrawer extends StatefulWidget {
   const PoyDrawer({Key? key}) : super(key: key);
@@ -10,8 +14,6 @@ class PoyDrawer extends StatefulWidget {
 }
 
 class _PoyDrawerState extends State<PoyDrawer> {
-  var offset = Offset(20, 20);
-  OverlayEntry? entry;
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -53,17 +55,21 @@ class _PoyDrawerState extends State<PoyDrawer> {
                     SizedBox(height: 10),
                     ListTile(
                       title: Text("Partager l'application"),
-                      onTap: () {},
+                      onTap: () {
+                        partagerApplication();
+                      },
                       leading: Icon(Icons.share),
                     ),
                     ListTile(
                       title: Text("Evaluez nous"),
-                      onTap: () {},
+                      onTap: evaluationPopUp,
                       leading: Icon(Icons.star),
                     ),
                     ListTile(
                       title: Text("Nous contacter"),
-                      onTap: () {},
+                      onTap: () {
+                        contactPopUp();
+                      },
                       leading: Icon(Icons.mail),
                     ),
                   ],
@@ -83,5 +89,67 @@ class _PoyDrawerState extends State<PoyDrawer> {
         ),
       ),
     );
+  }
+
+  // mes fonctions
+
+  partagerApplication() async {
+    await Share.share(
+      "lien github du projet",
+    );
+  }
+
+  evaluationPopUp() {
+    showCupertinoDialog(
+        barrierDismissible: true,
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text("Pas disponible"),
+            content: Text(
+                "vous pourrez evaluer l'application une fois sur le store"),
+            actions: [
+              CupertinoDialogAction(
+                child: Text("retour"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  contactPopUp() {
+    showCupertinoModalPopup(
+        context: context,
+        builder: (context) {
+          return CupertinoActionSheet(
+            title: Text("Nous contacter"),
+            cancelButton: CupertinoActionSheetAction(
+              isDestructiveAction: true,
+              onPressed: () {},
+              child: Text("retour"),
+            ),
+            actions: [
+              CupertinoActionSheetAction(
+                onPressed: () {
+                  contactMail();
+                },
+                child: Text(
+                  "Mail",
+                ),
+              ),
+              CupertinoActionSheetAction(
+                onPressed: () {
+                  contactNumberWhatsApp();
+                },
+                child: Text(
+                  "Whatssap",
+                ),
+              ),
+            ],
+          );
+        });
   }
 }

@@ -198,30 +198,37 @@ class _CorpsState extends State<Corps> {
                   children: [
                     Column(
                       children: [
-                        GestureDetector(
+                        InkWell(
                           onTap: () {
-                            changeDepartLangue(true);
+                            changeLangue(true);
                           },
-                          child: Row(
-                            children: [
-                              const SizedBox(width: 20),
-                              Container(
-                                child: CircleAvatar(
-                                  backgroundImage:
-                                      AssetImage(langueDepart.image!),
+                          child: Padding(
+                            padding:
+                                EdgeInsets.only(top: 10, right: 10, bottom: 10),
+                            child: Row(
+                              children: [
+                                const SizedBox(width: 20),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: CircleAvatar(
+                                    backgroundImage:
+                                        AssetImage(langueDepart.image!),
+                                  ),
+                                  width: 30,
+                                  height: 30,
                                 ),
-                                width: 30,
-                                height: 30,
-                              ),
-                              const SizedBox(width: 15),
-                              Text(
-                                "${langueDepart.nom}",
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w500,
+                                const SizedBox(width: 15),
+                                Text(
+                                  "${langueDepart.nom}",
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                         Container(
@@ -289,77 +296,81 @@ class _CorpsState extends State<Corps> {
                       ),
                     Column(
                       children: [
-                        GestureDetector(
+                        InkWell(
                           onTap: () {
-                            changeDepartLangue(false);
+                            changeLangue(false);
                           },
-                          child: Row(
-                            children: [
-                              const SizedBox(width: 20),
-                              Container(
-                                child: CircleAvatar(
-                                  backgroundImage:
-                                      AssetImage(langueArriver.image!),
-                                ),
-                                width: 30,
-                                height: 30,
-                              ),
-                              const SizedBox(width: 15),
-                              Text(
-                                "${langueArriver.nom}",
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              if (resultatTraduction != "" && !ecoute)
-                                GestureDetector(
-                                  onTap: () {
-                                    speak(langueArriver.abreger!,
-                                        resultatTraduction!);
-                                  },
-                                  child: Container(
-                                    margin:
-                                        EdgeInsets.symmetric(horizontal: 10),
-                                    child: Icon(
-                                      Icons.volume_up,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                    width: 30,
-                                    height: 30,
-                                    decoration: BoxDecoration(
-                                      color: Colors.purple,
-                                      shape: BoxShape.circle,
-                                    ),
+                          child: Padding(
+                            padding:
+                                EdgeInsets.only(top: 10, right: 10, bottom: 10),
+                            child: Row(
+                              children: [
+                                const SizedBox(width: 20),
+                                Container(
+                                  child: CircleAvatar(
+                                    backgroundImage:
+                                        AssetImage(langueArriver.image!),
                                   ),
+                                  width: 30,
+                                  height: 30,
                                 ),
-                              Spacer(),
-                              if (resultatTraduction != "" &&
-                                  !ecoute &&
-                                  !copied)
-                                IconButton(
-                                  onPressed: () {
-                                    FlutterClipboard.copy(resultatTraduction!)
-                                        .then((value) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          duration: Duration(seconds: 1),
-                                          content: Text("Text copié"),
-                                        ),
-                                      );
-                                      setState(() {
-                                        copied = true;
-                                      });
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.copy,
+                                const SizedBox(width: 15),
+                                Text(
+                                  "${langueArriver.nom}",
+                                  style: const TextStyle(
                                     color: Colors.grey,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                            ],
+                                if (resultatTraduction != "" && !ecoute)
+                                  GestureDetector(
+                                    onTap: () {
+                                      speak(langueArriver.abreger!,
+                                          resultatTraduction!);
+                                    },
+                                    child: Container(
+                                      margin:
+                                          EdgeInsets.symmetric(horizontal: 10),
+                                      child: Icon(
+                                        Icons.volume_up,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      width: 30,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                        color: Colors.purple,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                                Spacer(),
+                                if (resultatTraduction != "" &&
+                                    !ecoute &&
+                                    !copied)
+                                  IconButton(
+                                    onPressed: () {
+                                      FlutterClipboard.copy(resultatTraduction!)
+                                          .then((value) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            duration: Duration(seconds: 1),
+                                            content: Text("Text copié"),
+                                          ),
+                                        );
+                                        setState(() {
+                                          copied = true;
+                                        });
+                                      });
+                                    },
+                                    icon: Icon(
+                                      Icons.copy,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
                         load
@@ -665,13 +676,14 @@ class _CorpsState extends State<Corps> {
     );
   }
 
-  changeDepartLangue(bool first) {
+  changeLangue(bool first) {
+    // si first==true changeDepartLangue sinon changeArriverlangue
     List<Langue> mesLangues = [
       Langue(nom: "francais", abreger: 'fr', image: "assets/france.png"),
-      Langue(nom: "Anglais", abreger: 'en', image: "assets/angleterre.png"),
+      Langue(nom: "anglais", abreger: 'en', image: "assets/angleterre.png"),
       Langue(nom: "russe", abreger: 'ru', image: "assets/russie.png"),
       Langue(nom: "arabe", abreger: 'ar', image: "assets/rabe.png"),
-      Langue(nom: "espagne", abreger: 'es', image: "assets/espagne.png"),
+      Langue(nom: "espagnol", abreger: 'es', image: "assets/espagne.png"),
       Langue(nom: "chinois", image: "assets/chine.png", abreger: "zh-cn"),
     ];
     for (var i = 0; i < mesLangues.length; i++) {
@@ -715,8 +727,8 @@ class _CorpsState extends State<Corps> {
               children: [
                 Container(
                   margin: EdgeInsets.only(top: 9, bottom: 20),
-                  width: 45,
-                  height: 6,
+                  width: 40,
+                  height: 5,
                   decoration: BoxDecoration(
                     color: Colors.grey,
                     borderRadius: BorderRadius.circular(15),
@@ -777,18 +789,6 @@ class _CorpsState extends State<Corps> {
                     ),
                   ),
                 ),
-                // Expanded(
-                //   child: Container(
-                //     child: Center(
-                //       child: CupertinoButton(
-                //           color: Colors.purple,
-                //           child: Text("Selectionner"),
-                //           onPressed: () {
-                //             Navigator.pop(context);
-                //           }),
-                //     ),
-                //   ),
-                // )
               ],
             ),
           );
