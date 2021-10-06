@@ -2,9 +2,9 @@
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:lottie/lottie.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:share/share.dart';
 import 'package:voicetranslate/constante/contacter.dart';
+import 'package:voicetranslate/history.dart';
 
 class PoyDrawer extends StatefulWidget {
   const PoyDrawer({Key? key}) : super(key: key);
@@ -66,6 +66,18 @@ class _PoyDrawerState extends State<PoyDrawer> {
                       leading: Icon(Icons.star),
                     ),
                     ListTile(
+                      title: Text("Votre historique"),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(builder: (context) {
+                            return History();
+                          }),
+                        );
+                      },
+                      leading: Icon(Icons.history),
+                    ),
+                    ListTile(
                       title: Text("Nous contacter"),
                       onTap: () {
                         contactPopUp();
@@ -95,7 +107,7 @@ class _PoyDrawerState extends State<PoyDrawer> {
 
   partagerApplication() async {
     await Share.share(
-      "lien github du projet",
+      "https://github.com/kitoko2/traductorApp.git",
     );
   }
 
@@ -125,10 +137,11 @@ class _PoyDrawerState extends State<PoyDrawer> {
         context: context,
         builder: (context) {
           return CupertinoActionSheet(
-            title: Text("Nous contacter"),
             cancelButton: CupertinoActionSheetAction(
               isDestructiveAction: true,
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pop(context);
+              },
               child: Text("retour"),
             ),
             actions: [

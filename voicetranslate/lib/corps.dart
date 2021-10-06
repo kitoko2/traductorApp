@@ -14,6 +14,7 @@ import "package:speech_to_text/speech_to_text.dart" as stt;
 import "package:flutter_tts/flutter_tts.dart" as tts;
 import "package:translator/translator.dart";
 import 'package:voicetranslate/constante/enddrawer.dart';
+import 'package:voicetranslate/database/translateDatabase.dart';
 import 'package:voicetranslate/langue.dart';
 import "package:modal_bottom_sheet/modal_bottom_sheet.dart";
 import "package:clipboard/clipboard.dart";
@@ -70,6 +71,15 @@ class _CorpsState extends State<Corps> {
         resultatTraduction = a.text;
         load = false;
         copied = false;
+        DatabaseTraduction.instance.insert(
+          TraduitResult(
+            id: 1,
+            motEntrer: motEntrer,
+            resultatTraduction: resultatTraduction,
+            langueDepart: depart,
+            langueArriver: arriver,
+          ),
+        );
       });
 
       speak(arriver, resultatTraduction!);
@@ -98,8 +108,13 @@ class _CorpsState extends State<Corps> {
     if (image != null) {
       File? cropImage = await ImageCropper.cropImage(
         sourcePath: image.path,
-        // aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
-        // aspectRatioPresets: [CropAspectRatioPreset.ratio3x2]);
+        iosUiSettings: IOSUiSettings(
+          minimumAspectRatio: 1.0,
+        ),
+        androidUiSettings: AndroidUiSettings(
+          toolbarTitle: "Choississez le text à traduire",
+          lockAspectRatio: false, //pour pouvoir bien rogner
+        ),
       );
       if (cropImage != null) {
         inputImage = InputImage.fromFile(File(cropImage.path));
@@ -108,12 +123,15 @@ class _CorpsState extends State<Corps> {
         });
         RecognisedText recognisedText =
             await textDetector.processImage(inputImage!);
+
         for (var block in recognisedText.blocks) {
-          print(block.text);
-          setState(() {
-            resultat += block.text + " ";
-          });
+          for (var l in block.lines) {
+            setState(() {
+              resultat += l.text + " ";
+            });
+          }
         }
+
         setState(() {
           isLoading = false;
         });
@@ -184,7 +202,7 @@ class _CorpsState extends State<Corps> {
         ],
         elevation: 0,
       ),
-      body: isLoading
+      body: isLoading //traitement d'image
           ? Center(
               child: CircularProgressIndicator(),
             )
@@ -490,30 +508,25 @@ class _CorpsState extends State<Corps> {
               myDialog(
                 "Delais passé",
                 "Nous avons attendu aucun mots veillez réessayer",
+                "Réessayer",
               );
-            }
-            if (val.errorMsg == "error_server") {
-              showCupertinoDialog(
-                context: context,
-                barrierDismissible: true,
-                builder: (context) {
-                  return CupertinoAlertDialog(
-                    title: const Text("Connection impossible"),
-                    content: const Text(
-                        "vous avez besoin de la connection internet pour cette fonctionnalité"),
-                    actions: [
-                      CupertinoDialogAction(
-                        child: const Text("Ok"),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      )
-                    ],
-                  );
-                },
+            } else if (val.errorMsg == "error_client") {
+              setState(() {
+                motEntrer = "";
+                resultatTraduction = "";
+              });
+              myDialog(
+                "Impossible de vous ecoutez",
+                "veillez activer Google dans les paramètres pour utiliser cette fonctionalité",
+                "Ok",
               );
-            }
-            if (val.errorMsg == "error_no_match") {
+            } else if (val.errorMsg == "error_server") {
+              myDialog(
+                "Connection impossible",
+                "vous avez besoin de la connection internet pour cette fonctionnalité",
+                "Ok",
+              );
+            } else if (val.errorMsg == "error_no_match") {
               setState(() {
                 textSpech.stop();
               });
@@ -521,12 +534,13 @@ class _CorpsState extends State<Corps> {
               myDialog(
                 "Incompris",
                 "Nous avons pas compris ce que vous avez dit veillez réessayer",
+                "Réessayer",
               );
-            }
-            if (val.errorMsg == "error_network") {
+            } else if (val.errorMsg == "error_network") {
               myDialog(
                 "Aucune connexion",
                 "Nous avons pas pus traduit ce que vous avez dit veillez réessayer",
+                "Réessayer",
               );
             }
           },
@@ -565,6 +579,13 @@ class _CorpsState extends State<Corps> {
         }
       } on PlatformException catch (e) {
         print(e.toString());
+        if (e.code == "recognizerNotAvailable") {
+          myDialog(
+            "Non disponible",
+            "veillez activer Google dans les paramètres pour utiliser cette fonctionalité",
+            "Ok",
+          );
+        }
       }
     } else {
       setState(() {
@@ -654,7 +675,7 @@ class _CorpsState extends State<Corps> {
         });
   }
 
-  myDialog(String title, String content) {
+  myDialog(String title, String content, String action) {
     showCupertinoDialog(
       context: context,
       barrierDismissible: true,
@@ -664,10 +685,10 @@ class _CorpsState extends State<Corps> {
           content: Text(content),
           actions: [
             CupertinoDialogAction(
-              child: const Text("Réessayer"),
+              child: Text(action),
               onPressed: () {
                 Navigator.pop(context);
-                func();
+                if (action != "Ok") func();
               },
             )
           ],
@@ -681,6 +702,7 @@ class _CorpsState extends State<Corps> {
     List<Langue> mesLangues = [
       Langue(nom: "francais", abreger: 'fr', image: "assets/france.png"),
       Langue(nom: "anglais", abreger: 'en', image: "assets/angleterre.png"),
+      Langue(nom: "Allemand", abreger: "de", image: "assets/allemand.png"),
       Langue(nom: "russe", abreger: 'ru', image: "assets/russie.png"),
       Langue(nom: "arabe", abreger: 'ar', image: "assets/rabe.png"),
       Langue(nom: "espagnol", abreger: 'es', image: "assets/espagne.png"),
@@ -697,7 +719,6 @@ class _CorpsState extends State<Corps> {
         context: context,
         containerWidget: (context, animation, c) {
           return Container(
-            // child: c,
             child: ClipRRect(
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(20),

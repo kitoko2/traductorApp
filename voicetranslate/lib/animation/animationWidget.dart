@@ -71,7 +71,7 @@ class _AnimationWidgetState extends State<AnimationWidget>
       vsync: this,
       duration: Duration(milliseconds: 500),
     );
-    Timer(Duration(seconds: widget.second!), () {
+    Timer(Duration(milliseconds: widget.second!), () {
       if (mounted) {
         animationController!.forward();
       }

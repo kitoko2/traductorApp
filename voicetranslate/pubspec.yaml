@@ -43,6 +43,8 @@ dependencies:
   image_picker: ^0.8.4+2
   share: ^2.0.4
   url_launcher: ^6.0.12
+  path: ^1.8.0
+  sqflite: ^2.0.0+4
   flutter:
     sdk: flutter
 
@@ -77,6 +79,7 @@ flutter:
   assets:
     - assets/
     - assets/lottie/
+    - assets/allemand.png
     # - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

@@ -52,7 +52,7 @@ class _DescriptionState extends State<Description> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       AnimationWidget(
-                        second: 1,
+                        second: 10,
                         depart: Depart.top,
                         child: Text(
                           "Bienvenue ",
@@ -86,16 +86,12 @@ class _DescriptionState extends State<Description> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      AnimationWidget(
-                        depart: Depart.top,
-                        second: 1,
-                        child: Text(
-                          "Choissisez votre langue puis parlez...",
-                          textAlign: TextAlign.center,
-                          style: style.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
+                      Text(
+                        "Choissisez votre langue puis parlez...",
+                        textAlign: TextAlign.center,
+                        style: style.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
                         ),
                       ),
                       Container(
@@ -103,12 +99,16 @@ class _DescriptionState extends State<Description> {
                             "assets/lottie/65263-mic-animation.json"),
                         height: 200,
                       ),
-                      Text(
-                        "Vous pouvez aussi saisir votre phrase au clavier",
-                        textAlign: TextAlign.center,
-                        style: style.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 22,
+                      AnimationWidget(
+                        second: 10,
+                        depart: Depart.bottom,
+                        child: Text(
+                          "Vous pouvez aussi saisir votre phrase au clavier",
+                          textAlign: TextAlign.center,
+                          style: style.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                          ),
                         ),
                       )
                     ],
@@ -121,7 +121,7 @@ class _DescriptionState extends State<Description> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       AnimationWidget(
-                        second: 1,
+                        second: 10,
                         depart: Depart.top,
                         child: Text(
                           "Avec l'intelligence artificiel , vous avez la possibilité de traduire le text sur les photos",
