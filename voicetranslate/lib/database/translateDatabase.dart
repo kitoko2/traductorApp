@@ -39,6 +39,17 @@ class DatabaseTraduction {
     );
   }
 
+  update(TraduitResult t) async {
+    final Database tdb = await database;
+
+    await tdb.update(
+      "resultat",
+      t.toMap(),
+      where: "id=?",
+      whereArgs: [t.id],
+    );
+  }
+
   delete() async {
     final tdb = await database;
     return tdb.delete("resultat");

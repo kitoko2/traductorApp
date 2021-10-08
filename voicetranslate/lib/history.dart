@@ -105,10 +105,6 @@ class _HistoryState extends State<History> {
                         ],
                       ),
                     );
-                    // return ListTile(
-                    //   title: Text("${r[i].motEntrer}"),
-                    //   leading: Text("${r[i].resultatTraduction}"),
-                    // );
                   },
                 );
               }

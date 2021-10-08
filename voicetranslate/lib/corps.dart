@@ -1,7 +1,8 @@
-// ignore_for_file: avoid_print, avoid_unnecessary_containers, sized_box_for_whitespace, prefer_const_constructors
+// ignore_for_file: avoid_print, avoid_unnecessary_containers, sized_box_for_whitespace, prefer_const_constructors, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables
 
 import 'dart:io';
 import 'dart:ui';
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/rendering.dart';
@@ -52,7 +53,7 @@ class _CorpsState extends State<Corps> {
   InputImage? inputImage;
   TextDetector textDetector = GoogleMlKit.vision.textDetector();
 
-  bool isLoading = false;
+  bool verif = false;
   bool showFAB = true;
   bool copied = false;
   ScrollController scrollController = ScrollController();
@@ -69,7 +70,7 @@ class _CorpsState extends State<Corps> {
           from: depart!, to: arriver!);
       setState(() {
         resultatTraduction = a.text;
-        load = false;
+
         copied = false;
         DatabaseTraduction.instance.insert(
           TraduitResult(
@@ -80,6 +81,9 @@ class _CorpsState extends State<Corps> {
             langueArriver: arriver,
           ),
         );
+        load = false; //fin de la traduction
+        ScaffoldMessenger.of(context)
+            .removeCurrentMaterialBanner(); // a la fin de latraduction on enleve la banner
       });
 
       speak(arriver, resultatTraduction!);
@@ -101,10 +105,15 @@ class _CorpsState extends State<Corps> {
   }
 
   getTextOnImage() async {
+    setState(() {
+      verif =
+          true; // au debut pour get l'image verif devient true et xa charge a la fin de la fonction il redevient false pour laisser apparaitre l'aplli
+    });
     var resultat = "";
     ImagePicker picker = ImagePicker();
     ImageSource source = isCamera ? ImageSource.camera : ImageSource.gallery;
     final image = await picker.pickImage(source: source);
+
     if (image != null) {
       File? cropImage = await ImageCropper.cropImage(
         sourcePath: image.path,
@@ -118,9 +127,6 @@ class _CorpsState extends State<Corps> {
       );
       if (cropImage != null) {
         inputImage = InputImage.fromFile(File(cropImage.path));
-        setState(() {
-          isLoading = true;
-        });
         RecognisedText recognisedText =
             await textDetector.processImage(inputImage!);
 
@@ -131,10 +137,6 @@ class _CorpsState extends State<Corps> {
             });
           }
         }
-
-        setState(() {
-          isLoading = false;
-        });
         if (resultat != "") {
           setState(() {
             motEntrer = resultat;
@@ -148,6 +150,9 @@ class _CorpsState extends State<Corps> {
         }
       }
     }
+    setState(() {
+      verif = false;
+    });
   }
 
   @override
@@ -169,13 +174,20 @@ class _CorpsState extends State<Corps> {
 
   @override
   Widget build(BuildContext context) {
+    if (verif)
+      return Scaffold(
+        backgroundColor: mycolor1,
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: mycolor1,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: mycolor3,
-        title: const Text("Voice Translate"),
+        title: Text(ecoute ? "Veillez parler..." : "Voice Translate"),
         actions: [
           Builder(
             builder: (context) {
@@ -202,227 +214,211 @@ class _CorpsState extends State<Corps> {
         ],
         elevation: 0,
       ),
-      body: isLoading //traitement d'image
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : SingleChildScrollView(
-              controller: scrollController,
-              physics: const BouncingScrollPhysics(),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                child: Column(
-                  children: [
-                    Column(
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            changeLangue(true);
-                          },
-                          child: Padding(
-                            padding:
-                                EdgeInsets.only(top: 10, right: 10, bottom: 10),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 20),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: CircleAvatar(
-                                    backgroundImage:
-                                        AssetImage(langueDepart.image!),
-                                  ),
-                                  width: 30,
-                                  height: 30,
-                                ),
-                                const SizedBox(width: 15),
-                                Text(
-                                  "${langueDepart.nom}",
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
+      body: SingleChildScrollView(
+        controller: scrollController,
+        physics: const BouncingScrollPhysics(),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+          child: Column(
+            children: [
+              Column(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      changeLangue(true);
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 10, right: 10, bottom: 10),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 20),
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                            ),
+                            child: CircleAvatar(
+                              backgroundImage: AssetImage(langueDepart.image!),
+                            ),
+                            width: 30,
+                            height: 30,
+                          ),
+                          const SizedBox(width: 15),
+                          Text(
+                            "${langueDepart.nom}",
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.only(top: 15),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 10),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(top: 15),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: motEntrer != "" ? mycolor4 : Colors.transparent,
+                      borderRadius: BorderRadius.circular(15),
+                      border: motEntrer != ""
+                          ? Border.all(color: Colors.white54, width: 0.5)
+                          : null,
+                    ),
+                    width: double.infinity,
+                    child: !toucher
+                        ? Center(
+                            child: Text(
+                              "Appuiyer sur le boutton 'micro' et dites quelque chose...",
+                              style: style.copyWith(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          )
+                        : Text(
+                            motEntrer!,
+                            style: style.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+              Visibility(
+                visible: motEntrer != "" && !load,
+                child: IconButton(
+                  onPressed: () async {
+                    textSpech.stop(); // stoper pour eviter les melanges de voix
+                    setState(() {
+                      var intermediaire = langueDepart;
+                      langueDepart = langueArriver;
+                      langueArriver = intermediaire;
+                      motEntrer = resultatTraduction;
+                      traductor(
+                        phrase: motEntrer,
+                        depart: langueDepart.abreger,
+                        arriver: langueArriver.abreger,
+                      );
+                    });
+                  },
+                  icon: const Icon(
+                    Icons.autorenew_rounded,
+                    color: Colors.white38,
+                    size: 29,
+                  ),
+                ),
+              ),
+              if (motEntrer == "" || load)
+                const SizedBox(
+                  height: 10,
+                ),
+              Column(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      changeLangue(false);
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 10, right: 10, bottom: 10),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 20),
+                          Container(
+                            child: CircleAvatar(
+                              backgroundImage: AssetImage(langueArriver.image!),
+                            ),
+                            width: 30,
+                            height: 30,
+                          ),
+                          const SizedBox(width: 15),
+                          Text(
+                            "${langueArriver.nom}",
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          if (resultatTraduction != "" && !ecoute)
+                            GestureDetector(
+                              onTap: () {
+                                speak(langueArriver.abreger!,
+                                    resultatTraduction!);
+                              },
+                              child: Container(
+                                margin: EdgeInsets.symmetric(horizontal: 10),
+                                child: Icon(
+                                  Icons.volume_up,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  color: Colors.purple,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                          Spacer(),
+                          if (resultatTraduction != "" && !ecoute && !copied)
+                            IconButton(
+                              onPressed: () {
+                                FlutterClipboard.copy(resultatTraduction!)
+                                    .then((value) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      duration: Duration(seconds: 1),
+                                      content: Text("Text copié"),
+                                    ),
+                                  );
+                                  setState(() {
+                                    copied = true;
+                                  });
+                                });
+                              },
+                              icon: Icon(
+                                Icons.copy,
+                                color: Colors.grey,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  load
+                      ? Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : Container(
+                          margin: EdgeInsets.only(top: 15),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 20),
                           decoration: BoxDecoration(
-                            color:
-                                motEntrer != "" ? mycolor4 : Colors.transparent,
+                            color: Colors.transparent,
                             borderRadius: BorderRadius.circular(15),
                             border: motEntrer != ""
                                 ? Border.all(color: Colors.white54, width: 0.5)
                                 : null,
                           ),
+                          // height: 200,
                           width: double.infinity,
-                          child: !toucher
-                              ? Center(
-                                  child: Text(
-                                    "Appuiyer sur le boutton 'micro' et dites quelque chose...",
-                                    style: style.copyWith(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                )
-                              : Text(
-                                  motEntrer!,
-                                  style: style.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                        ),
-                      ],
-                    ),
-                    Visibility(
-                      visible: motEntrer != "" && !load,
-                      child: IconButton(
-                        onPressed: () async {
-                          textSpech
-                              .stop(); // stoper pour eviter les melanges de voix
-                          setState(() {
-                            var intermediaire = langueDepart;
-                            langueDepart = langueArriver;
-                            langueArriver = intermediaire;
-                            motEntrer = resultatTraduction;
-                            traductor(
-                              phrase: motEntrer,
-                              depart: langueDepart.abreger,
-                              arriver: langueArriver.abreger,
-                            );
-                          });
-                        },
-                        icon: const Icon(
-                          Icons.autorenew_rounded,
-                          color: Colors.white38,
-                          size: 29,
-                        ),
-                      ),
-                    ),
-                    if (motEntrer == "" || load)
-                      const SizedBox(
-                        height: 10,
-                      ),
-                    Column(
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            changeLangue(false);
-                          },
-                          child: Padding(
-                            padding:
-                                EdgeInsets.only(top: 10, right: 10, bottom: 10),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 20),
-                                Container(
-                                  child: CircleAvatar(
-                                    backgroundImage:
-                                        AssetImage(langueArriver.image!),
-                                  ),
-                                  width: 30,
-                                  height: 30,
-                                ),
-                                const SizedBox(width: 15),
-                                Text(
-                                  "${langueArriver.nom}",
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                if (resultatTraduction != "" && !ecoute)
-                                  GestureDetector(
-                                    onTap: () {
-                                      speak(langueArriver.abreger!,
-                                          resultatTraduction!);
-                                    },
-                                    child: Container(
-                                      margin:
-                                          EdgeInsets.symmetric(horizontal: 10),
-                                      child: Icon(
-                                        Icons.volume_up,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                      width: 30,
-                                      height: 30,
-                                      decoration: BoxDecoration(
-                                        color: Colors.purple,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                Spacer(),
-                                if (resultatTraduction != "" &&
-                                    !ecoute &&
-                                    !copied)
-                                  IconButton(
-                                    onPressed: () {
-                                      FlutterClipboard.copy(resultatTraduction!)
-                                          .then((value) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            duration: Duration(seconds: 1),
-                                            content: Text("Text copié"),
-                                          ),
-                                        );
-                                        setState(() {
-                                          copied = true;
-                                        });
-                                      });
-                                    },
-                                    icon: Icon(
-                                      Icons.copy,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                              ],
+                          child: Text(
+                            "$resultatTraduction",
+                            style: style.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
                             ),
                           ),
                         ),
-                        load
-                            ? Center(
-                                child: CircularProgressIndicator(),
-                              )
-                            : Container(
-                                margin: EdgeInsets.only(top: 15),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 20),
-                                decoration: BoxDecoration(
-                                  color: Colors.transparent,
-                                  borderRadius: BorderRadius.circular(15),
-                                  border: motEntrer != ""
-                                      ? Border.all(
-                                          color: Colors.white54, width: 0.5)
-                                      : null,
-                                ),
-                                // height: 200,
-                                width: double.infinity,
-                                child: Text(
-                                  "$resultatTraduction",
-                                  style: style.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ),
-                      ],
-                    ),
-                  ],
-                ),
+                ],
               ),
-            ),
+            ],
+          ),
+        ),
+      ),
       endDrawer: PoyDrawer(),
       bottomSheet: showFAB
           ? Container(
@@ -490,108 +486,154 @@ class _CorpsState extends State<Corps> {
   // MES FONCTIONS
 
   func() async {
-    setState(() {
-      motEntrer = "";
-      resultatTraduction = "";
-    }); // pour gerer la repetition de l'ancien resultatTraduction quand il ya une erreur
-    if (!ecoute) {
-      try {
-        textSpech.stop();
-        bool available = await speech.initialize(
-          onError: (val) {
-            print("on error $val");
-            if (val.errorMsg == "error_speech_timeout") {
-              setState(() {
-                motEntrer = "";
-                resultatTraduction = "";
-              });
-              myDialog(
-                "Delais passé",
-                "Nous avons attendu aucun mots veillez réessayer",
-                "Réessayer",
-              );
-            } else if (val.errorMsg == "error_client") {
-              setState(() {
-                motEntrer = "";
-                resultatTraduction = "";
-              });
-              myDialog(
-                "Impossible de vous ecoutez",
-                "veillez activer Google dans les paramètres pour utiliser cette fonctionalité",
-                "Ok",
-              );
-            } else if (val.errorMsg == "error_server") {
-              myDialog(
-                "Connection impossible",
-                "vous avez besoin de la connection internet pour cette fonctionnalité",
-                "Ok",
-              );
-            } else if (val.errorMsg == "error_no_match") {
-              setState(() {
-                textSpech.stop();
-              });
-
-              myDialog(
-                "Incompris",
-                "Nous avons pas compris ce que vous avez dit veillez réessayer",
-                "Réessayer",
-              );
-            } else if (val.errorMsg == "error_network") {
-              myDialog(
-                "Aucune connexion",
-                "Nous avons pas pus traduit ce que vous avez dit veillez réessayer",
-                "Réessayer",
-              );
-            }
-          },
-          onStatus: (val) {
-            if (val == "done") {
-              setState(() {
-                ecoute = false;
-              });
-
-              if (motEntrer != "") {
-                //traduction
-                traductor(
-                  phrase: motEntrer,
-                  depart: langueDepart.abreger!,
-                  arriver: langueArriver.abreger!,
-                );
-              }
-            }
-
-            print("on status $val");
-          },
+    print("-----------------------");
+    print(
+        load); //load dois etre false si c'est true c'est que traduction en cours
+    if (load) {
+      ScaffoldMessenger.of(context)
+        ..removeCurrentMaterialBanner()
+        ..showMaterialBanner(
+          MaterialBanner(
+            backgroundColor: mycolor4,
+            content: Text(
+              "Traduction déja en cours ...",
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).removeCurrentMaterialBanner();
+                  },
+                  child: Text("ok")),
+            ],
+          ),
         );
-
-        if (available) {
-          setState(() {
-            ecoute = true;
-            toucher = true;
-          });
-          speech.listen(
-            onResult: (resultat) async {
-              setState(() {
-                motEntrer = resultat.recognizedWords;
-              });
-            },
-          );
-        }
-      } on PlatformException catch (e) {
-        print(e.toString());
-        if (e.code == "recognizerNotAvailable") {
-          myDialog(
-            "Non disponible",
-            "veillez activer Google dans les paramètres pour utiliser cette fonctionalité",
-            "Ok",
-          );
-        }
-      }
     } else {
       setState(() {
-        ecoute = false;
-      });
-      speech.stop();
+        motEntrer = "";
+        resultatTraduction = "";
+      }); // pour gerer la repetition de l'ancien resultatTraduction quand il ya une erreur
+      if (!ecoute) {
+        try {
+          textSpech.stop();
+          bool available = await speech.initialize(
+            onError: (val) {
+              print("on error $val");
+              if (val.errorMsg == "error_speech_timeout") {
+                setState(() {
+                  motEntrer = "";
+                  resultatTraduction = "";
+                });
+                myDialog(
+                  "Delais passé",
+                  "Nous avons attendu aucun mots veillez réessayer",
+                  "Réessayer",
+                );
+              } else if (val.errorMsg == "error_client") {
+                setState(() {
+                  motEntrer = "";
+                  resultatTraduction = "";
+                });
+                myDialog(
+                  "Impossible de vous ecoutez",
+                  "veillez activer Google dans les paramètres pour utiliser cette fonctionalité",
+                  "Ok",
+                );
+              } else if (val.errorMsg == "error_server") {
+                myDialog(
+                  "Connection impossible",
+                  "vous avez besoin de la connection internet pour cette fonctionnalité",
+                  "Ok",
+                );
+              } else if (val.errorMsg == "error_no_match") {
+                setState(() {
+                  textSpech.stop();
+                });
+
+                myDialog(
+                  "Incompris",
+                  "Nous avons pas compris ce que vous avez dit veillez réessayer",
+                  "Réessayer",
+                );
+              } else if (val.errorMsg == "error_network") {
+                myDialog(
+                  "Aucune connexion",
+                  "Nous avons pas pus traduit ce que vous avez dit veillez réessayer",
+                  "Réessayer",
+                );
+              }
+            },
+            onStatus: (val) {
+              if (val == "done") {
+                setState(() {
+                  ecoute = false;
+                });
+
+                if (motEntrer != "") {
+                  //traduction
+                  traductor(
+                    phrase: motEntrer,
+                    depart: langueDepart.abreger!,
+                    arriver: langueArriver.abreger!,
+                  );
+                }
+              }
+
+              print("on status $val");
+            },
+          );
+
+          if (available) {
+            setState(() {
+              ecoute = true;
+              toucher = true;
+            });
+            speech.listen(
+              onResult: (resultat) async {
+                setState(() {
+                  motEntrer = resultat.recognizedWords;
+                });
+              },
+            );
+          } else {
+            // pas disponible veillez activer les autorisatios
+
+            showCupertinoDialog(
+                context: context,
+                barrierDismissible: true,
+                builder: (contex) {
+                  return CupertinoAlertDialog(
+                    title: Text("Non disponible"),
+                    content: Text(
+                        "veillez activer l'acces au microphone dans les paramètres"),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: Text("Paramètre"),
+                        onPressed: () {
+                          AppSettings.openAppSettings();
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  );
+                });
+          }
+        } on PlatformException catch (e) {
+          print(e.toString());
+          if (e.code == "recognizerNotAvailable") {
+            myDialog(
+              "Non disponible",
+              "veillez activer Google dans les paramètres pour utiliser cette fonctionalité",
+              "Ok",
+            );
+          }
+        }
+      } else {
+        setState(() {
+          ecoute = false;
+        });
+        speech.stop();
+      }
     }
   }
 

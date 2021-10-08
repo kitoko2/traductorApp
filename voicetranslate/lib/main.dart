@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, curly_braces_in_flow_control_structures
 
 import "package:flutter/material.dart";
 import "package:splash_screen_view/SplashScreenView.dart";
@@ -38,7 +38,7 @@ class MyHome extends StatefulWidget {
 
 class _MyHomeState extends State<MyHome> {
   Future<SharedPreferences> pref = SharedPreferences.getInstance();
-  bool isFirst = false;
+  bool? isFirst;
 
   @override
   void initState() {
@@ -52,10 +52,21 @@ class _MyHomeState extends State<MyHome> {
 
   @override
   Widget build(BuildContext context) {
+    if (isFirst == null)
+      return Container(
+        color: Colors.white,
+      );
     return SplashScreenView(
-      navigateRoute: isFirst ? Description() : Corps(),
+      navigateRoute: isFirst! ? Description() : Corps(),
       backgroundColor: Colors.white,
-      imageSrc: "assets/undraw_conversation_h12g.png",
+      imageSrc: "assets/Lt.png",
+      text: "TraductorApp",
+      textType: TextType.ScaleAnimatedText,
+      textStyle: TextStyle(
+        color: Colors.purple,
+        fontWeight: FontWeight.bold,
+        fontSize: 21,
+      ),
       imageSize: 260,
     );
   }
