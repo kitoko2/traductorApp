@@ -489,7 +489,6 @@ class _CorpsState extends State<Corps> {
   // MES FONCTIONS
 
   func() async {
-    print("-----------------------");
     print(
         load); //load dois etre false si c'est true c'est que traduction en cours
     if (load) {
@@ -745,13 +744,14 @@ class _CorpsState extends State<Corps> {
   changeLangue(bool first) {
     // si first==true changeDepartLangue sinon changeArriverlangue
     List<Langue> mesLangues = [
-      Langue(nom: "francais", abreger: 'fr', image: "assets/france.png"),
-      Langue(nom: "anglais", abreger: 'en', image: "assets/angleterre.png"),
+      Langue(nom: "Francais", abreger: 'fr', image: "assets/france.png"),
+      Langue(nom: "Anglais", abreger: 'en', image: "assets/angleterre.png"),
       Langue(nom: "Allemand", abreger: "de", image: "assets/allemand.png"),
-      Langue(nom: "russe", abreger: 'ru', image: "assets/russie.png"),
-      Langue(nom: "arabe", abreger: 'ar', image: "assets/rabe.png"),
-      Langue(nom: "espagnol", abreger: 'es', image: "assets/espagne.png"),
-      Langue(nom: "chinois", image: "assets/chine.png", abreger: "zh-cn"),
+      Langue(nom: "Russe", abreger: 'ru', image: "assets/russie.png"),
+      Langue(nom: "Arabe", abreger: 'ar', image: "assets/rabe.png"),
+      Langue(nom: "Espagnol", abreger: 'es', image: "assets/espagne.png"),
+      Langue(nom: "Chinois", image: "assets/chine.png", abreger: "zh-cn"),
+      Langue(nom: "Italien", image: "assets/italie.png", abreger: "it"),
     ];
     for (var i = 0; i < mesLangues.length; i++) {
       if (mesLangues[i].abreger ==
@@ -838,9 +838,14 @@ class _CorpsState extends State<Corps> {
                                     width: 30,
                                     height: 30,
                                   ),
-                                  Text(
-                                    "${mesLangues[index].nom}",
-                                    style: style,
+                                  Container(
+                                    width: 100,
+                                    child: Center(
+                                      child: Text(
+                                        "${mesLangues[index].nom}",
+                                        style: style,
+                                      ),
+                                    ),
                                   ),
                                   Icon(
                                     Icons.mic,
