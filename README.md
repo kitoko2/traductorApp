@@ -25,7 +25,7 @@ Nous avons aussi ajouté une base de donnée locale pour stocker les traductions
 # partie technique
 
 ► pour la voix :  \
-  speech_to_text -> pour convertir la voix en text et ensuite traduire
+  speech_to_text -> pour convertir la voix en text et ensuite traduire |
   flutter_tts -> pour convertir le text en voix après la traduction \
 ► pour la traduction :  \
   translator -> pour traduire de la langue de départ à la langue d'arrivé \
