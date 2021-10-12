@@ -121,7 +121,10 @@ class _CorpsState extends State<Corps> {
           minimumAspectRatio: 1.0,
         ),
         androidUiSettings: AndroidUiSettings(
+          activeControlsWidgetColor: Colors.purple,
           toolbarTitle: "Choississez le text à traduire",
+          toolbarWidgetColor: Colors.white,
+          toolbarColor: mycolor1,
           lockAspectRatio: false, //pour pouvoir bien rogner
         ),
       );
