@@ -1,7 +1,7 @@
 # traductorApp
 
 application mobile pour la traduction par :
-► la voix \n
+► la voix \
 ► saisie au clavier 
 ► possibilité de traduire le texte sur une photo prise ou une capture d'ecran avec l'intelligence artificiel
 (pratique pour nos voyageurs qui peuvent traduire par exemple le texte sur les panneaux )
