@@ -20,7 +20,7 @@ Nous avons implémenté pour l'instant 08 langues (parmis les 10 langues les plu
 
 # autres
 
-Nous avons aussi ajouté une base de donnée locale pour stocker les traductions effectuées. \
+Nous avons aussi ajouté une base de donnée locale pour stocker les traductions effectuées.
 
 # partie technique
 
