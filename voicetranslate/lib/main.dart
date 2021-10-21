@@ -6,6 +6,7 @@ import 'package:voicetranslate/corps.dart';
 import "package:shared_preferences/shared_preferences.dart";
 import 'package:voicetranslate/description.dart';
 import "package:firebase_core/firebase_core.dart";
+import "package:firebase_messaging/firebase_messaging.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

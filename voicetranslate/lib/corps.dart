@@ -1,8 +1,11 @@
 // ignore_for_file: avoid_print, avoid_unnecessary_containers, sized_box_for_whitespace, prefer_const_constructors, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:app_settings/app_settings.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/rendering.dart';
@@ -16,10 +19,12 @@ import "package:flutter_tts/flutter_tts.dart" as tts;
 import "package:translator/translator.dart";
 import 'package:voicetranslate/constante/enddrawer.dart';
 import 'package:voicetranslate/database/translateDatabase.dart';
+import 'package:voicetranslate/history.dart';
 import 'package:voicetranslate/langue.dart';
 import "package:modal_bottom_sheet/modal_bottom_sheet.dart";
 import "package:clipboard/clipboard.dart";
 import "package:google_ml_kit/google_ml_kit.dart";
+import "package:quick_actions/quick_actions.dart";
 
 class Corps extends StatefulWidget {
   const Corps({Key? key}) : super(key: key);
@@ -58,6 +63,8 @@ class _CorpsState extends State<Corps> {
   bool copied = false;
   ScrollController scrollController = ScrollController();
 
+  QuickActions quickActions = QuickActions();
+
   traductor(
       {@required String? phrase,
       @required String? depart,
@@ -66,10 +73,10 @@ class _CorpsState extends State<Corps> {
       setState(() {
         load = true;
       });
-      var a = await googleTranslator.translate(phrase!,
+      var translate = await googleTranslator.translate(phrase!,
           from: depart!, to: arriver!);
       setState(() {
-        resultatTraduction = a.text;
+        resultatTraduction = translate.text;
 
         copied = false;
         DatabaseTraduction.instance.insert(
@@ -90,9 +97,13 @@ class _CorpsState extends State<Corps> {
     } catch (e) {
       // error de traduction
       // if Failed host lookup: 'translate.googleapis.com' pas connection
-      print("traduction error not connection");
+      print("traduction error not connection"); // mettre show toast
       print(e.toString());
-      traductor(phrase: phrase, depart: depart, arriver: arriver);
+      if (motEntrer!.trim() != "") {
+        traductor(phrase: phrase, depart: depart, arriver: arriver);
+      } else {
+        print("-------- passer a vide");
+      }
     }
   }
 
@@ -158,8 +169,21 @@ class _CorpsState extends State<Corps> {
     });
   }
 
+  void _bootStrapFirebase() async {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("onMessage : ");
+      print(message.notification!.body);
+    });
+    FirebaseMessaging.onBackgroundMessage((message) async {
+      print("onBackground : ");
+      print(message.notification!.body);
+    });
+  }
+
   @override
   void initState() {
+    _bootStrapFirebase();
     super.initState();
     scrollController.addListener(() {
       var direction = scrollController.position.userScrollDirection;
@@ -173,6 +197,20 @@ class _CorpsState extends State<Corps> {
         });
       }
     });
+
+    quickActions.initialize((type) {
+      if (type == "app") {
+        Navigator.pushReplacementNamed(context, "/corps");
+      } else if (type == "historique") {
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return History();
+        }));
+      }
+    });
+    quickActions.setShortcutItems([
+      ShortcutItem(type: "app", localizedTitle: "traduction"),
+      ShortcutItem(type: "historique", localizedTitle: "historique"),
+    ]);
   }
 
   @override
@@ -489,13 +527,17 @@ class _CorpsState extends State<Corps> {
   // MES FONCTIONS
 
   func() async {
-    print(
-        load); //load dois etre false si c'est true c'est que traduction en cours
+    // print( load); //load dois etre false si c'est true c'est que traduction en cours
     if (load) {
       ScaffoldMessenger.of(context)
         ..removeCurrentMaterialBanner()
         ..showMaterialBanner(
           MaterialBanner(
+            onVisible: () {
+              Timer(Duration(seconds: 1), () {
+                ScaffoldMessenger.of(context)..removeCurrentMaterialBanner();
+              });
+            },
             backgroundColor: mycolor4,
             content: Text(
               "Traduction déja en cours ...",
@@ -503,10 +545,11 @@ class _CorpsState extends State<Corps> {
             ),
             actions: [
               TextButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).removeCurrentMaterialBanner();
-                  },
-                  child: Text("ok")),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).removeCurrentMaterialBanner();
+                },
+                child: Text("compris"),
+              ),
             ],
           ),
         );
@@ -520,49 +563,59 @@ class _CorpsState extends State<Corps> {
           textSpech.stop();
           bool available = await speech.initialize(
             onError: (val) {
+              setState(() {
+                toucher = false;
+              });
               print("on error $val");
-              if (val.errorMsg == "error_speech_timeout") {
+              if (mounted) {
                 setState(() {
-                  motEntrer = "";
-                  resultatTraduction = "";
+                  ecoute = false;
                 });
-                myDialog(
-                  "Delais passé",
-                  "Nous avons attendu aucun mots veillez réessayer",
-                  "Réessayer",
-                );
-              } else if (val.errorMsg == "error_client") {
-                setState(() {
-                  motEntrer = "";
-                  resultatTraduction = "";
-                });
-                myDialog(
-                  "Impossible de vous ecoutez",
-                  "veillez activer Google dans les paramètres pour utiliser cette fonctionalité",
-                  "Ok",
-                );
-              } else if (val.errorMsg == "error_server") {
-                myDialog(
-                  "Connection impossible",
-                  "vous avez besoin de la connection internet pour cette fonctionnalité",
-                  "Ok",
-                );
-              } else if (val.errorMsg == "error_no_match") {
-                setState(() {
-                  textSpech.stop();
-                });
+                if (val.errorMsg == "error_speech_timeout") {
+                  setState(() {
+                    motEntrer = "";
+                    resultatTraduction = "";
+                  });
+                  myDialog(
+                    "Delais passé",
+                    "Nous avons attendu aucun mots veillez réessayer",
+                    "Réessayer",
+                  );
+                } else if (val.errorMsg == "error_client") {
+                  setState(() {
+                    motEntrer = "";
+                    resultatTraduction = "";
+                  });
+                  myDialog(
+                    "Impossible de vous ecoutez",
+                    "veillez activer Google dans les paramètres pour utiliser cette fonctionalité",
+                    "Ok",
+                  );
+                } else if (val.errorMsg == "error_server") {
+                  myDialog(
+                    "Connection impossible",
+                    "vous avez besoin de la connection internet pour cette fonctionnalité",
+                    "Ok",
+                  );
+                } else if (val.errorMsg == "error_no_match") {
+                  setState(() {
+                    textSpech.stop();
+                  });
 
-                myDialog(
-                  "Incompris",
-                  "Nous avons pas compris ce que vous avez dit veillez réessayer",
-                  "Réessayer",
-                );
-              } else if (val.errorMsg == "error_network") {
-                myDialog(
-                  "Aucune connexion",
-                  "Nous avons pas pus traduit ce que vous avez dit veillez réessayer",
-                  "Réessayer",
-                );
+                  myDialog(
+                    "Incompris",
+                    "Nous avons pas compris ce que vous avez dit veillez réessayer",
+                    "Réessayer",
+                  );
+                } else if (val.errorMsg == "error_network") {
+                  myDialog(
+                    "Aucune connexion",
+                    "Nous avons pas pus traduit ce que vous avez dit veillez réessayer",
+                    "Réessayer",
+                  );
+                }
+              } else {
+                print("corps pas mounted");
               }
             },
             onStatus: (val) {
@@ -816,10 +869,15 @@ class _CorpsState extends State<Corps> {
                                 langueDepart = mesLangues[select];
                                 motEntrer = "";
                                 resultatTraduction = "";
+                                load = false; // enlever le chargement
+                                toucher = false;
+                                // pour remettre le text par default
                               } else {
                                 langueArriver = mesLangues[select];
                                 motEntrer = "";
                                 resultatTraduction = "";
+                                load = false;
+                                toucher = false;
                               }
                             });
                           },

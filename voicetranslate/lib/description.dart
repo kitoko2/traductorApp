@@ -7,6 +7,7 @@ import "package:shared_preferences/shared_preferences.dart";
 import 'package:lottie/lottie.dart';
 import 'package:voicetranslate/animation/animationWidget.dart';
 import 'package:voicetranslate/constante/couleur.dart';
+import "package:firebase_messaging/firebase_messaging.dart";
 
 class Description extends StatefulWidget {
   const Description({Key? key}) : super(key: key);
@@ -19,8 +20,14 @@ class _DescriptionState extends State<Description> {
   int initialPage = 0;
   TextStyle style = TextStyle(color: Colors.white);
   bool showFAB = false;
-
+  FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   Future<SharedPreferences> prefs = SharedPreferences.getInstance();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;

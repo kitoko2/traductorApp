@@ -41,7 +41,7 @@ class _PoyDrawerState extends State<PoyDrawer> {
                             Align(
                               alignment: Alignment.bottomCenter,
                               child: Text(
-                                "Traduction App",
+                                "TraductorApp",
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 22,
