@@ -12,7 +12,6 @@ FirebaseMessaging firebaseMessage = FirebaseMessaging.instance;
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  firebaseMessage.requestPermission();
   print("onbackgroundMessage : ");
   print(message.notification!.body);
 }
@@ -62,6 +61,7 @@ class _MyHomeState extends State<MyHome> {
 
   @override
   void initState() {
+    firebaseMessage.requestPermission();
     pref.then((SharedPreferences _prefs) {
       setState(() {
         isFirst = _prefs.getBool("isFirst") ?? true;
