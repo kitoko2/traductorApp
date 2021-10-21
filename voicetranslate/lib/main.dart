@@ -8,9 +8,28 @@ import 'package:voicetranslate/description.dart';
 import "package:firebase_core/firebase_core.dart";
 import "package:firebase_messaging/firebase_messaging.dart";
 
+FirebaseMessaging firebaseMessage = FirebaseMessaging.instance;
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  firebaseMessage.requestPermission();
+  print("onbackgroundMessage : ");
+  print(message.notification!.body);
+}
+
+void _bootStrapFirebase() async {
+  await Firebase.initializeApp();
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print("onMessage : ");
+    print(message.notification!.body);
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  _bootStrapFirebase();
   runApp(MyApp());
 }
 

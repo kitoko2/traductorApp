@@ -169,21 +169,10 @@ class _CorpsState extends State<Corps> {
     });
   }
 
-  void _bootStrapFirebase() async {
-    await Firebase.initializeApp();
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("onMessage : ");
-      print(message.notification!.body);
-    });
-    FirebaseMessaging.onBackgroundMessage((message) async {
-      print("onBackground : ");
-      print(message.notification!.body);
-    });
-  }
+  FirebaseMessaging firebaseMessage = FirebaseMessaging.instance;
 
   @override
   void initState() {
-    _bootStrapFirebase();
     super.initState();
     scrollController.addListener(() {
       var direction = scrollController.position.userScrollDirection;
@@ -202,14 +191,22 @@ class _CorpsState extends State<Corps> {
       if (type == "app") {
         Navigator.pushReplacementNamed(context, "/corps");
       } else if (type == "historique") {
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
+        Navigator.push(context, CupertinoPageRoute(builder: (context) {
           return History();
         }));
       }
     });
     quickActions.setShortcutItems([
-      ShortcutItem(type: "app", localizedTitle: "traduction"),
-      ShortcutItem(type: "historique", localizedTitle: "historique"),
+      ShortcutItem(
+        type: "app",
+        localizedTitle: "traduction",
+        icon: "@mipmap/ic_translate",
+      ),
+      ShortcutItem(
+        type: "historique",
+        localizedTitle: "historique",
+        icon: "@mipmap/ic_history",
+      ),
     ]);
   }
 
