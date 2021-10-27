@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:app_settings/app_settings.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
@@ -169,7 +168,8 @@ class _CorpsState extends State<Corps> {
     });
   }
 
-  FirebaseMessaging firebaseMessage = FirebaseMessaging.instance;
+  int initialItemTrue = 0; // si le parametre de change langage est true
+  int initialItemFalse = 0; // si le parametre de change langage est false
 
   @override
   void initState() {
@@ -280,7 +280,7 @@ class _CorpsState extends State<Corps> {
                             width: 30,
                             height: 30,
                           ),
-                          const SizedBox(width: 15),
+                          SizedBox(width: 15),
                           Text(
                             "${langueDepart.nom}",
                             style: const TextStyle(
@@ -325,32 +325,46 @@ class _CorpsState extends State<Corps> {
                   ),
                 ],
               ),
+              SizedBox(
+                height: 15,
+              ),
               Visibility(
-                visible: motEntrer != "" && !load,
-                child: IconButton(
-                  onPressed: () async {
-                    textSpech.stop(); // stoper pour eviter les melanges de voix
-                    setState(() {
-                      var intermediaire = langueDepart;
-                      langueDepart = langueArriver;
-                      langueArriver = intermediaire;
-                      motEntrer = resultatTraduction;
-                      traductor(
-                        phrase: motEntrer,
-                        depart: langueDepart.abreger,
-                        arriver: langueArriver.abreger,
-                      );
-                    });
-                  },
-                  icon: const Icon(
-                    Icons.autorenew_rounded,
-                    color: Colors.white38,
-                    size: 29,
+                visible: !ecoute && !load,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: mycolor4,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: IconButton(
+                    splashRadius: 25,
+                    onPressed: () async {
+                      textSpech
+                          .stop(); // stoper pour eviter les melanges de voix
+                      setState(() {
+                        var intermediaire = langueDepart;
+                        langueDepart = langueArriver;
+                        langueArriver = intermediaire;
+                        motEntrer = resultatTraduction;
+                        if (motEntrer != "")
+                          traductor(
+                            phrase: motEntrer,
+                            depart: langueDepart.abreger,
+                            arriver: langueArriver.abreger,
+                          );
+                      });
+                    },
+                    icon: Icon(
+                      Icons.autorenew_rounded,
+                      color: Colors.white38,
+                      size: 22,
+                    ),
                   ),
                 ),
               ),
               if (motEntrer == "" || load)
-                const SizedBox(
+                SizedBox(
                   height: 10,
                 ),
               Column(
@@ -803,12 +817,22 @@ class _CorpsState extends State<Corps> {
       Langue(nom: "Chinois", image: "assets/chine.png", abreger: "zh-cn"),
       Langue(nom: "Italien", image: "assets/italie.png", abreger: "it"),
     ];
+
     for (var i = 0; i < mesLangues.length; i++) {
       if (mesLangues[i].abreger ==
           (first ? langueArriver.abreger : langueDepart.abreger)) {
         mesLangues.removeAt(i);
       }
     }
+    for (var i = 0; i < mesLangues.length; i++) {
+      if (mesLangues[i].abreger ==
+          (!first ? langueArriver.abreger : langueDepart.abreger)) {
+        Langue res = mesLangues.removeAt(i);
+        mesLangues.insert(0, res);
+      }
+      // veut dire :  si lesLangues[i].abr == (si on change la langue d'arriver )? langueArriver ,on supprime la langue arriver déja selectionné puis on l'ajoute tous en haut de la liste...
+      // ce qui me permet d'eviter le FixedExtentScrollController
+    } // ce for pour que la langue selectionnée se supprime de la liste et s'ajoute tous en haut
 
     showCustomModalBottomSheet(
         context: context,
