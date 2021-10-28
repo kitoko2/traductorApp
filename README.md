@@ -29,5 +29,7 @@ Nous avons aussi ajouté une base de donnée locale pour stocker les traductions
   flutter_tts -> pour convertir le text en voix après la traduction \
 ► pour la traduction :  \
   translator -> pour traduire de la langue de départ à la langue d'arrivé \
+► pour les notifications :  \
+  firebase_messaging -> pour gérer les notifications en background \
 ► pour l'intelligence artificielle : \
   google_ml_kit -> pour la reconnaissance de text sur l'image 
